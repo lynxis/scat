@@ -7,6 +7,11 @@ import calendar
 import logging
 from collections import namedtuple
 
+from .diagcmd import qmi_log_channel, diag_log_get_1x_item_id
+
+def _qmi_log_channel(channel, rx_tx):
+    return diag_log_get_1x_item_id(qmi_log_channel(channel, rx_tx))
+
 class Diag1xLogParser:
     def __init__(self, parent):
         self.parent = parent
@@ -17,10 +22,44 @@ class Diag1xLogParser:
         self.last_rx = [b'', b'']
         self.ip_id = 0
 
+
         self.process = {
             # SIM
             #0x1098: lambda x, y, z: self.parse_sim(x, y, z, 0), # RUIM Debug
             #0x14CE: lambda x, y, z: self.parse_sim(x, y, z, 1), # UIM DS Data
+
+            _qmi_log_channel(0, True): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(0, False): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(1, True): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(1, False): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(2, True): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(2, False): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(3, True): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(3, False): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(4, True): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(4, False): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(5, True): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(5, False): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(6, True): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(6, False): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(7, True): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(7, False): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(8, True): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(8, False): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(9, True): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(9, False): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(10, True): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(10, False): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(11, True): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(11, False): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(12, True): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(12, False): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(13, True): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(13, False): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(14, True): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(14, False): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(15, True): lambda x, y, z: self.parse_qmi(x, y, z),
+            _qmi_log_channel(15, False): lambda x, y, z: self.parse_qmi(x, y, z),
 
             # Generic
             0x11EB: lambda x, y, z: self.parse_ip(x, y, z), # Protocol Services Data
@@ -28,6 +67,19 @@ class Diag1xLogParser:
             # IMS
             0x156E: lambda x, y, z: self.parse_sip_message(x, y, z),
         }
+
+    def parse_qmi(self, pkt_header, pkt_body, args):
+        pkt_ts = util.parse_qxdm_ts(pkt_header.timestamp)
+        ts_sec = calendar.timegm(pkt_ts.timetuple())
+        ts_usec = pkt_ts.microsecond
+        gsmtap_hdr = util.create_gsmtap_header(
+            version = 3,
+            payload_type = util.gsmtapv3_types.NR_RRC,
+            arfcn = 0,
+            sub_type = 1,
+            device_sec = ts_sec,
+            device_usec = ts_usec)
+        return {'layer': 'qmi', 'cp': [gsmtap_hdr + pkt_body], 'ts': pkt_ts, 'stdout': stdout}
 
     def parse_ip(self, pkt_header, pkt_body, args):
         pkt_ts = util.parse_qxdm_ts(pkt_header.timestamp)

@@ -247,6 +247,7 @@ class QualcommParser:
             self.io_device.write_then_read_discard(util.generate_packet(diagcmd.log_mask_scat_1x(self.log_id_range[diagcmd.DIAG_SUBSYS_ID_1X], self.layers)), 0x1000, False)
         else:
             self.io_device.write_then_read_discard(util.generate_packet(diagcmd.log_mask_scat_1x(layers=self.layers)), 0x1000, False)
+
         if diagcmd.DIAG_SUBSYS_ID_WCDMA in self.log_id_range:
             self.io_device.write_then_read_discard(util.generate_packet(diagcmd.log_mask_scat_wcdma(self.log_id_range[diagcmd.DIAG_SUBSYS_ID_WCDMA], self.layers)), 0x1000, False)
         else:
@@ -767,6 +768,8 @@ class QualcommParser:
             if len(pkt) < (8 + 4 * (pkt_header.num_ranges)):
                 return None
             for i in range(pkt_header.num_ranges):
+                if len(pkt) <= pos + 4:
+                    break
                 id_range = struct.unpack('<HH', pkt[pos:pos+4])
                 stdout += '{}-{}, '.format(id_range[0], id_range[1])
                 id_ranges.append((id_range[0], id_range[1]))
@@ -786,6 +789,9 @@ class QualcommParser:
             if len(pkt) < (8 + 4 * (pkt_header.end_id - pkt_header.start_id + 1)):
                 return None
             for i in range(pkt_header.end_id - pkt_header.start_id + 1):
+                if len(pkt) <= pos + 4:
+                    break
+
                 level = struct.unpack('<L', pkt[pos:pos+4])[0]
                 stdout += 'Message ID {}: {:#x}\n'.format(pkt_header.start_id + i, level)
                 levels.append((pkt_header.start_id + i, level))

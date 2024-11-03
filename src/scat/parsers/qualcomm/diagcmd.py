@@ -43,12 +43,50 @@ LOG_CONFIG_GET_LOGMASK_OP = 4
 def diag_log_get_1x_item_id(x):
     return 0x1000 + x
 
+def qmi_log_channel(channel: int, rx: bool):
+    # QMI Log range is 5006 - 5038 (0x1000 + 0x38e = 5006)
+    # offset of 0x1000 will be added by diag_log_get_1x_item_id
+    return 0x38e + (2 * channel) + (0 if rx else 1)
+
 @unique
 class diag_log_code_1x(IntEnum):
     LOG_UIM_DATA_C = 0x98                                         # 0x1098 RUIM Debug
     LOG_INTERNAL_CORE_DUMP_C = 0x158                              # 0x1158 Internal - Core Dump
     LOG_DATA_PROTOCOL_LOGGING_C = 0x1eb                           # 0x11EB Protocol Services Data
     LOG_GENERIC_SIM_TOOLKIT_TASK_C = 0x272                        # 0x1272 Generic SIM Toolkit Task
+    LOG_QMI_CHANNEL_00_RX = qmi_log_channel(0, True)
+    LOG_QMI_CHANNEL_00_TX = qmi_log_channel(0, False)
+    LOG_QMI_CHANNEL_01_RX = qmi_log_channel(1, True)
+    LOG_QMI_CHANNEL_01_TX = qmi_log_channel(1, False)
+    LOG_QMI_CHANNEL_02_RX = qmi_log_channel(2, True)
+    LOG_QMI_CHANNEL_02_TX = qmi_log_channel(2, False)
+    LOG_QMI_CHANNEL_03_RX = qmi_log_channel(3, True)
+    LOG_QMI_CHANNEL_03_TX = qmi_log_channel(3, False)
+    LOG_QMI_CHANNEL_04_RX = qmi_log_channel(4, True)
+    LOG_QMI_CHANNEL_04_TX = qmi_log_channel(4, False)
+    LOG_QMI_CHANNEL_05_RX = qmi_log_channel(5, True)
+    LOG_QMI_CHANNEL_05_TX = qmi_log_channel(5, False)
+    LOG_QMI_CHANNEL_06_RX = qmi_log_channel(6, True)
+    LOG_QMI_CHANNEL_06_TX = qmi_log_channel(6, False)
+    LOG_QMI_CHANNEL_07_RX = qmi_log_channel(7, True)
+    LOG_QMI_CHANNEL_07_TX = qmi_log_channel(7, False)
+    LOG_QMI_CHANNEL_08_RX = qmi_log_channel(8, True)
+    LOG_QMI_CHANNEL_08_TX = qmi_log_channel(8, False)
+    LOG_QMI_CHANNEL_09_RX = qmi_log_channel(9, True)
+    LOG_QMI_CHANNEL_09_TX = qmi_log_channel(9, False)
+    LOG_QMI_CHANNEL_10_RX = qmi_log_channel(10, True)
+    LOG_QMI_CHANNEL_10_TX = qmi_log_channel(10, False)
+    LOG_QMI_CHANNEL_11_RX = qmi_log_channel(11, True)
+    LOG_QMI_CHANNEL_11_TX = qmi_log_channel(11, False)
+    LOG_QMI_CHANNEL_12_RX = qmi_log_channel(12, True)
+    LOG_QMI_CHANNEL_12_TX = qmi_log_channel(12, False)
+    LOG_QMI_CHANNEL_13_RX = qmi_log_channel(13, True)
+    LOG_QMI_CHANNEL_13_TX = qmi_log_channel(13, False)
+    LOG_QMI_CHANNEL_14_RX = qmi_log_channel(14, True)
+    LOG_QMI_CHANNEL_14_TX = qmi_log_channel(14, False)
+    LOG_QMI_CHANNEL_15_RX = qmi_log_channel(15, True)
+    LOG_QMI_CHANNEL_15_TX = qmi_log_channel(15, False)
+
     LOG_UIM_DS_DATA_C = 0x4ce                                     # 0x14CE UIM DS Data
     LOG_DATA_PROTOCOL_LOGGING_NETWORK_IP_RM_TX_80_BYTES_C = 0x572 # 0x1572 Network IP Rm Tx 80 Bytes
     LOG_DATA_PROTOCOL_LOGGING_NETWORK_IP_RM_RX_80_BYTES_C = 0x573 # 0x1573 Network IP Rm Rx 80 Bytes
@@ -71,6 +109,14 @@ class diag_log_code_1x(IntEnum):
     LOG_DATA_PROTOCOL_LOGGING_FLOW_UM_TX_80_BYTES_C = 0x584       # 0x1584 Flow Um Tx 80 Bytes
     LOG_DATA_PROTOCOL_LOGGING_FLOW_UM_TX_FULL_C = 0x585           # 0x1585 Flow Um Tx Full
     LOG_IMS_SIP_MESSAGE = 0x56E                                   # 0x156E IMS SIP Message
+
+## Origin: http://cgit.osmocom.org/osmo-qcdiag/tree/src/protocol/diag_log_1x.h
+#def diag_log_get_qmi_item_id(x):
+#    return 0x1000 + 0x38e + x
+#
+#@unique
+#class diag_log_code_qmi(IntEnum):
+#    pass
 
 # Origin: http://cgit.osmocom.org/osmo-qcdiag/tree/src/protocol/diag_log_wcdma.h
 def diag_log_get_wcdma_item_id(x):
@@ -294,6 +340,41 @@ def log_mask_scat_1x(num_max_items=0x0847, layers=[]):
             diag_log_code_1x.LOG_DATA_PROTOCOL_LOGGING_FLOW_UM_TX_80_BYTES_C,
             diag_log_code_1x.LOG_DATA_PROTOCOL_LOGGING_FLOW_UM_TX_FULL_C,
             diag_log_code_1x.LOG_IMS_SIP_MESSAGE,
+        ]
+    if 'qmi' in layers:
+        log_items += [
+            diag_log_code_1x.LOG_QMI_CHANNEL_00_RX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_00_TX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_01_RX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_01_TX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_02_RX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_02_TX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_03_RX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_03_TX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_04_RX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_04_TX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_05_RX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_05_TX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_06_RX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_06_TX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_07_RX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_07_TX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_08_RX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_08_TX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_09_RX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_09_TX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_10_RX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_10_TX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_11_RX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_11_TX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_12_RX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_12_TX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_13_RX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_13_TX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_14_RX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_14_TX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_15_RX,
+            diag_log_code_1x.LOG_QMI_CHANNEL_15_TX,
         ]
 
     return create_log_config_set_mask(DIAG_SUBSYS_ID_1X, num_max_items, *log_items)
