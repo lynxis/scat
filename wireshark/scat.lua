@@ -271,6 +271,10 @@ local gsmtapv3_nas_5gs_subtypes = {
     [0x0001] = { check_and_get_dissector("nas-5gs"), "NAS/5GS" }
 }
 
+local gsmtapv3_baseband_diag_subtypes = {
+    [0x0012] = { check_and_get_dissector("qmi"), "QMI" }
+}
+
 function gsmtapv3_parse_metadata(t, hdr_buffer, hdr_len)
     local offset = 0
 
@@ -353,7 +357,22 @@ function gsmtap_wrapper_proto.dissector(tvbuffer, pinfo, treeitem)
                                    :set_text(string.format("Type: 0x%04x (%s)", type, itemtext))
 
         pinfo.cols.protocol = "GSMTAPv3"
-        if type == 0x0403 then
+        if type == 0x0002 then
+            -- baseband diag
+            pinfo.cols.info = ""
+            itemtext = "Unknown"
+            if gsmtapv3_baseband_diag_subtypes[subtype] then
+                itemtext = gsmtapv3_baseband_diag_subtypes[subtype][2]
+            end
+            local child, subtype_value = t:add(F_gsmtapv3_subtype, tvbuffer(6, 2))
+                                    :set_text(string.format("Subtype: 0x%04x (%s)", subtype, itemtext))
+            gsmtapv3_parse_metadata(t, tvbuffer(8, 4 * hdr_len - 8), 4 * hdr_len - 8)
+            if gsmtapv3_baseband_diag_subtypes[subtype] then
+                gsmtapv3_baseband_diag_subtypes[subtype][1]:call(gsmtap_data:tvb(), pinfo, treeitem)
+            else
+                Dissector.get("data"):call(gsmtap_data:tvb(), pinfo, treeitem)
+            end
+        elseif type == 0x0403 then
             pinfo.cols.info = ""
             itemtext = "Unknown"
             if gsmtapv3_lte_rrc_subtypes[subtype] then
